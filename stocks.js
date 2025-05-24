@@ -31,7 +31,7 @@ function getLastClosingPrice(fields, lastItem, sfield) {
 }
 
 function proData(data, sfield) {
-    let out = []
+
     console.log("<<<", data, ">>>");
     if (data.stat.toUpperCase() == "OK") {
         //let index = data.fields.findIndex(x => x == "收盤價");
@@ -48,20 +48,37 @@ function proData(data, sfield) {
         
         if (_total == 0)
             return null;
+
+        let out = []
+        for (var idx=_total; idx > 0; idx--) {
+            _lastItemIdx = idx - 1
+            // chcek --
+            if (data.data[_lastItemIdx][6] == '--') {
+                console.log("skip " + data.data[_lastItemIdx][0])
+                continue;
+            }
         
-        _lastItemIdx = _total - 1
+            out.push(data.data[_lastItemIdx][0]);
+            out.push(parseInt(data.data[_lastItemIdx][1].replace(/,/g,'')));
+            out.push(parseInt(data.data[_lastItemIdx][2].replace(/,/g,'')));
+            out.push(parseFloat(data.data[_lastItemIdx][3].replace(/,/g,'')));
+            out.push(parseFloat(data.data[_lastItemIdx][4].replace(/,/g,'')));
+            out.push(parseFloat(data.data[_lastItemIdx][5].replace(/,/g,'')));
+            out.push(parseFloat(data.data[_lastItemIdx][6].replace(/,/g,'')));
+            out.push(data.data[_lastItemIdx][7]);
+            out.push(parseInt(data.data[_lastItemIdx][8].replace(/,/g,'')));
+            
+            console.log("out=", out);
+            
+            break;
+            
+        }
         
-        out.push(data.data[_total-1][0]);
-        out.push(parseInt(data.data[_lastItemIdx][1].replace(/,/g,'')));
-        out.push(parseInt(data.data[_lastItemIdx][2].replace(/,/g,'')));
-        out.push(parseFloat(data.data[_lastItemIdx][3].replace(/,/g,'')));
-        out.push(parseFloat(data.data[_lastItemIdx][4].replace(/,/g,'')));
-        out.push(parseFloat(data.data[_lastItemIdx][5].replace(/,/g,'')));
-        out.push(parseFloat(data.data[_lastItemIdx][6].replace(/,/g,'')));
-        out.push(data.data[_lastItemIdx][7]);
-        out.push(parseInt(data.data[_lastItemIdx][8].replace(/,/g,'')));
-        //console.log(out);
-        return out;
+        if (out == [])
+            return null;
+        else
+            return out;
+        
     } else {
         return null;
     }
@@ -170,8 +187,7 @@ function getStockDatafromTaipeiExchange(stockNo, date)
     });
 }
 
-
-async function getPrice(stockNo) {
+function getTodayString() {
     const now = new Date();
     let date = '';
     date = date + now.getFullYear();
@@ -180,6 +196,12 @@ async function getPrice(stockNo) {
     let d = now.getDate();
     date = date + (d < 10 ? '0'+d : d);
     console.log(date);
+    return date
+}
+
+async function getPrice(stockNo) {
+   
+    date = getTodayString()
     
     //let stockNo = '00763U'
     _url = `https://www.twse.com.tw/rwd/zh/afterTrading/STOCK_DAY?date=${date}&stockNo=${stockNo}&response=json`;
@@ -203,6 +225,7 @@ async function getPrice(stockNo) {
         )
     }
 
+    
     return value
 }
 
